@@ -56,7 +56,7 @@ public class RedisConfigTest {
         userVo.setName("测试dfas");
         userVo.setAge(123);
         ValueOperations<String,Object> operations = redisTemplate.opsForValue();
-        redisService.expireKey("name",20, TimeUnit.SECONDS);
+        redisService.expireKey("name",100, TimeUnit.SECONDS);
         String key = RedisKeyUtil.getKey(UserVo.Table,"name",userVo.getName());
         UserVo vo = (UserVo) operations.get(key);
         System.out.println(vo);

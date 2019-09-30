@@ -1,0 +1,129 @@
+server:
+  port: ${PORT:9002}
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: threadpool
+
+  # 出现错误时, 直接抛出异常
+  mvc:
+    throw-exception-if-no-handler-found: true
+  # 取消默认的一些映射处理 也就是404 405 500等错误 也直接抛出异常
+  resources:
+    add-mappings: false
+
+  # Flyway configuration
+  flyway:
+    baselineOnMigrate: true
+    ignore-missing-migrations: true
+    locations: classpath:db/migration
+
+# Mybatis-Plus StoreConfig
+mybatis-plus:
+  # 扫描 mapper.xml
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  # 枚举类扫描
+  typeEnumsPackage: com.troad.spring.*.enums
+  # 日志输出
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# feign configuration
+feign:
+  hystrix:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 10000
+        readTimeout: 10000
+#  compression:
+#    request:
+#      enabled: true
+#    response:
+#      enabled: true
+
+# ribbon configuration
+ribbon:
+  # 请求连接的超时
+  ConnectTimeout: 10000
+  # 请求处理的超时时间
+  ReadTimeout: 10000
+  MaxAutoRetries: 1 #最大重试次数，当Eureka中可以找到服务，但是服务连不上时将会重试
+  MaxAutoRetriesNextServer: 3 #切换实例的重试次数
+  OkToRetryOnAllOperations: true # 对所有的操作请求都进行重试
+
+# 熔断器设置 HystrixCommandProperties
+hystrix:
+  threadpool:
+    default:
+      # 并发执行的最大线程数，默认10
+      coreSize: 1000
+      maximumSize: 1000
+      allowMaximumSizeToDivergeFromCoreSize: true
+      # BlockingQueue的最大队列数
+      maxQueueSize: 1000
+      # 即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝
+      queueSizeRejectionThreshold: 1000
+  command:
+    default:
+      # 是否开启通过请求缓存提供去重复数据功能。 默认为true
+      requestCache:
+        enabled: false
+      execution:
+        timeout:
+          enabled: true
+        isolation:
+          strategy: SEMAPHORE
+          semaphore:
+            maxConcurrentRequests: 1000
+          thread:
+            #设置超时熔断时间 15秒
+            timeoutInMilliseconds: 30000
+      # 短路限制数量
+      circuitBreaker:
+        requestVolumeThreshold: 1000
+      fallback:
+        isolation:
+          semaphore:
+            maxConcurrentRequests: 1000
+
+
+# Actuator HTTP configuration
+##开启所有端点
+management:
+  endpoint:
+    pause:
+      enabled: true
+    restart:
+      enabled: true
+    refresh:
+      enabled: true
+    resume:
+      enabled: true
+    health:
+      show-details: always
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+# Logger Config
+logging:
+  level:
+    com.baomidou.mybatisplus: debug
+    com.fnb.auth.feign: debug
+    org:
+      mybatis:
+        spring: debug
+
+# 服务定义
+service:
+  # 1 中心服务-分类中心
+  pgs-category:
+    name: pgs-category
+    url:
